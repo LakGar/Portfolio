@@ -51,7 +51,7 @@ import {
   SiJsonwebtokens,
 } from "react-icons/si";
 import "./Finder.css";
-import Folder from "/Users/lakshaygarg/Developer/Portfolio/os-portfolio/src/assets/folder-icon-macos.webp";
+import Folder from "../../../assets/folder-icon-macos.webp";
 import { ThemeContext } from "../../../contexts/ThemeContext";
 import {
   FaTools,
