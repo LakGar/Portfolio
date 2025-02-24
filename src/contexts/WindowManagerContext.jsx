@@ -1,4 +1,4 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useState, useCallback } from "react";
 
 export const WindowManagerContext = createContext();
 
@@ -8,6 +8,8 @@ export const WindowManagerProvider = ({ children }) => {
   const [windowStates, setWindowStates] = useState({});
   const [nextZIndex, setNextZIndex] = useState(1);
   const [showHowTo, setShowHowTo] = useState(true);
+  const [notifications, setNotifications] = useState([]);
+  const [searchTriggered, setSearchTriggered] = useState(false);
 
   const getCenterPosition = () => {
     const screenWidth = window.innerWidth;
@@ -21,46 +23,49 @@ export const WindowManagerProvider = ({ children }) => {
     };
   };
 
-  const openApplication = (appId) => {
-    // If window exists but is minimized, restore it in center
-    if (windowStates[appId]?.isMinimized) {
-      setWindowStates((prev) => ({
-        ...prev,
-        [appId]: {
-          ...prev[appId],
-          isMinimized: false,
+  const openApplication = useCallback(
+    (appId) => {
+      // If window exists but is minimized, restore it in center
+      if (windowStates[appId]?.isMinimized) {
+        setWindowStates((prev) => ({
+          ...prev,
+          [appId]: {
+            ...prev[appId],
+            isMinimized: false,
+            zIndex: nextZIndex,
+            position: getCenterPosition(),
+          },
+        }));
+        setNextZIndex((prev) => prev + 1);
+        setActiveWindow(appId);
+        return;
+      }
+
+      // If window doesn't exist, create it in center
+      if (!windowStates[appId]) {
+        const newWindow = {
+          id: appId,
           zIndex: nextZIndex,
           position: getCenterPosition(),
-        },
-      }));
-      setNextZIndex((prev) => prev + 1);
-      setActiveWindow(appId);
-      return;
-    }
+          size: { width: 800, height: 600 },
+          isMinimized: false,
+          isMaximized: false,
+        };
 
-    // If window doesn't exist, create it in center
-    if (!windowStates[appId]) {
-      const newWindow = {
-        id: appId,
-        zIndex: nextZIndex,
-        position: getCenterPosition(),
-        size: { width: 800, height: 600 },
-        isMinimized: false,
-        isMaximized: false,
-      };
-
-      setWindowStates((prev) => ({
-        ...prev,
-        [appId]: newWindow,
-      }));
-      setOpenWindows((prev) => [...prev, appId]);
-      setNextZIndex((prev) => prev + 1);
-      setActiveWindow(appId);
-    } else {
-      // If window exists and isn't minimized, bring it to front
-      bringToFront(appId);
-    }
-  };
+        setWindowStates((prev) => ({
+          ...prev,
+          [appId]: newWindow,
+        }));
+        setOpenWindows((prev) => [...prev, appId]);
+        setNextZIndex((prev) => prev + 1);
+        setActiveWindow(appId);
+      } else {
+        // If window exists and isn't minimized, bring it to front
+        bringToFront(appId);
+      }
+    },
+    [nextZIndex, windowStates, getCenterPosition]
+  );
 
   const bringToFront = (appId) => {
     if (!windowStates[appId]) {
@@ -152,6 +157,14 @@ export const WindowManagerProvider = ({ children }) => {
     }));
   };
 
+  const showNotification = (message, icon) => {
+    const id = Date.now();
+    setNotifications((prev) => [...prev, { id, message, icon }]);
+    setTimeout(() => {
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+    }, 5000);
+  };
+
   return (
     <WindowManagerContext.Provider
       value={{
@@ -165,6 +178,11 @@ export const WindowManagerProvider = ({ children }) => {
         updateWindowSize,
         showHowTo,
         setShowHowTo,
+        notifications,
+        setNotifications,
+        showNotification,
+        searchTriggered,
+        setSearchTriggered,
       }}
     >
       {children}

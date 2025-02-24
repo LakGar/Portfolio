@@ -1,8 +1,7 @@
 .window {
   position: absolute !important;
-  border-radius: 10px;
+  border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
   min-width: 300px;
   min-height: 400px;
   transition: opacity 0.2s;
@@ -21,6 +20,8 @@
   padding: 0 12px;
   -webkit-app-region: drag;
   user-select: none;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
 }
 
 .window-controls {
@@ -95,6 +96,8 @@
 .window-content {
   height: calc(100% - 32px);
   overflow: hidden;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
 }
 
 .window.maximized {

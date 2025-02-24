@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, useRef } from "react";
 import "./Messages.css";
 import momAvatar from "../../../assets/avatars/mom-avatar.png";
 import dadAvatar from "../../../assets/avatars/dad-avatar.png";
@@ -15,6 +15,7 @@ import {
   FaExclamationCircle,
   FaComments,
 } from "react-icons/fa";
+import { getAIResponse } from "../../../services/openai";
 
 const Messages = () => {
   const [selectedChat, setSelectedChat] = useState(null);
@@ -23,6 +24,9 @@ const Messages = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [messageInput, setMessageInput] = useState("");
   const { accentColor } = useContext(ThemeContext);
+  const [isTyping, setIsTyping] = useState(false);
+  const chatEndRef = useRef(null);
+  const [aiChatMessages, setAiChatMessages] = useState([]);
 
   const chats = [
     {
@@ -234,6 +238,14 @@ const Messages = () => {
     setSelectedChat(chats[5]);
   }, []);
 
+  const scrollToBottom = () => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messageHistory, selectedChat]);
+
   const handleMessageInput = (e) => {
     if (selectedChat?.isInteractive) {
       setMessageInput(e.target.value);
@@ -244,13 +256,44 @@ const Messages = () => {
     }
   };
 
-  const handleMessageSubmit = (e) => {
+  const handleMessageSubmit = async (e) => {
     e.preventDefault();
     if (selectedChat?.isInteractive && messageInput.trim()) {
-      // Chabot coming soon mesage
-      setMessageInput("Chatbot coming soon!");
-      console.log("Message sent:", messageInput);
+      const newUserMessage = {
+        id: Date.now(),
+        content: messageInput,
+        time: "Now",
+        type: "sent",
+      };
+
+      setAiChatMessages((prev) => [...prev, newUserMessage]);
       setMessageInput("");
+      setIsTyping(true);
+
+      try {
+        // Get AI response
+        const aiReply = await getAIResponse(messageInput);
+
+        setIsTyping(false);
+        const aiResponse = {
+          id: Date.now() + 1,
+          content: aiReply,
+          time: "Now",
+          type: "received",
+        };
+        setAiChatMessages((prev) => [...prev, aiResponse]);
+      } catch (error) {
+        console.error("Error getting AI response:", error);
+        setIsTyping(false);
+        const errorResponse = {
+          id: Date.now() + 1,
+          content:
+            "Sorry, I'm having trouble connecting right now. Please try again later! 🙏",
+          time: "Now",
+          type: "received",
+        };
+        setAiChatMessages((prev) => [...prev, errorResponse]);
+      }
     }
   };
 
@@ -357,35 +400,66 @@ const Messages = () => {
                   key={message.id}
                   className={`message-group ${message.type}`}
                 >
-                  <div className="message-time">{message.time}</div>
-                  <div className={`message-bubble ${message.type}`}>
-                    {message.content}
-                  </div>
+                  <div className="message-bubble">{message.content}</div>
                 </div>
               ))}
+
+              {selectedChat.isInteractive &&
+                aiChatMessages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`message-group ${message.type}`}
+                  >
+                    <div className="message-bubble">{message.content}</div>
+                  </div>
+                ))}
+
+              {/* Add typing indicator */}
+              {isTyping && (
+                <div className="message-group received">
+                  <section className="dots-container">
+                    <div className="dot"></div>
+                    <div className="dot"></div>
+                    <div className="dot"></div>
+                  </section>
+                </div>
+              )}
             </div>
             <div className="message-input-container">
-              <input
-                type="text"
-                placeholder="iMessage"
-                className={`message-input ${inputError ? "error" : ""}`}
-                value={messageInput}
-                onChange={handleMessageInput}
-                onClick={() => {
-                  if (!selectedChat.isInteractive) {
+              {selectedChat?.isInteractive ? (
+                <>
+                  <input
+                    type="text"
+                    placeholder="iMessage"
+                    className="message-input"
+                    value={messageInput}
+                    onChange={(e) => setMessageInput(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") {
+                        handleMessageSubmit(e);
+                      }
+                    }}
+                  />
+                  <button
+                    className="send-button-messages"
+                    onClick={handleMessageSubmit}
+                    style={{ backgroundColor: accentColor }}
+                  >
+                    <FaArrowUp />
+                  </button>
+                </>
+              ) : (
+                <div
+                  className="message-input disabled"
+                  onClick={() => {
                     setInputError(true);
                     setShowAlert(true);
                     setTimeout(() => setInputError(false), 500);
-                  }
-                }}
-              />
-              <button
-                className="send-button-messages"
-                onClick={handleMessageSubmit}
-                style={{ backgroundColor: accentColor }}
-              >
-                <FaArrowUp />
-              </button>
+                  }}
+                >
+                  iMessage
+                </div>
+              )}
             </div>
 
             {showAlert && (

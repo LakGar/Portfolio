@@ -5,6 +5,7 @@ import WindowManager from "../../components/window-manager/WindowManager";
 import "./Desktop.css";
 import ApplicationBar from "../../components/application-bar/ApplicationBar";
 import HowTo from "../../components/how-to/HowTo";
+import NotificationManager from "../../components/notification/NotificationManager";
 import { WindowManagerContext } from "../../contexts/WindowManagerContext";
 
 const Desktop = () => {
@@ -20,6 +21,7 @@ const Desktop = () => {
         <div className="desktop-main-content"></div>
         <ApplicationBar />
         {showHowTo && <HowTo onClose={() => setShowHowTo(false)} />}
+        <NotificationManager />
       </div>
     </div>
   );

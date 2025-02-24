@@ -3,6 +3,7 @@ import "./Navigation.css";
 import appleLogo from "../../assets/logo-w.png";
 import { WindowManagerContext } from "../../contexts/WindowManagerContext";
 import { ThemeContext } from "../../contexts/ThemeContext";
+import { FaSearch, FaCog } from "react-icons/fa";
 
 const Navigation = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -15,7 +16,12 @@ const Navigation = () => {
 
   // Add ref for the dropdown container
   const dropdownRef = useRef(null);
-  const { activeWindow } = useContext(WindowManagerContext);
+  const {
+    activeWindow,
+    openApplication,
+    showNotification,
+    setSearchTriggered,
+  } = useContext(WindowManagerContext);
   const { accentColor } = useContext(ThemeContext);
 
   // Update time every minute
@@ -126,6 +132,15 @@ const Navigation = () => {
     }
   };
 
+  const handleSearch = () => {
+    showNotification(
+      "Quick Access: Resume in Notes, Projects in Finder, Contact in Messages",
+      FaSearch
+    );
+    setSearchTriggered(true);
+    openApplication("settings");
+  };
+
   return (
     <>
       <div className="screen-brightness-overlay" />
@@ -163,11 +178,8 @@ const Navigation = () => {
               </div>
             )}
           </div>
-          <div
-            className="stats-item"
-            onClick={(e) => handleIconClick("search", e)}
-          >
-            <i className="fas fa-search"></i>
+          <div className="stats-item" onClick={handleSearch}>
+            <FaSearch />
             {activeDropdown === "search" && (
               <div className="dropdown-menu search-dropdown">
                 <div className="dropdown-header">Spotlight Search</div>

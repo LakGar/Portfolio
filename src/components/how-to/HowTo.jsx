@@ -17,12 +17,11 @@ import settings from "../../assets/settings-icon.webp";
 const HowTo = ({ onClose }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const { accentColor, theme, setDockSize } = useContext(ThemeContext);
-  const { openApplication, closeApplication } =
+  const { openApplication, closeApplication, showNotification } =
     useContext(WindowManagerContext);
 
   // Memoize the action functions to prevent infinite loops
   const openFinder = useCallback(() => {
-    setDockSize(40);
     openApplication("finder");
   }, [openApplication]);
 
@@ -30,9 +29,7 @@ const HowTo = ({ onClose }) => {
     openApplication("settings");
   }, [openApplication]);
 
-  const changeDockSize = useCallback(() => {
-    setDockSize(60);
-  }, [setDockSize]);
+  const changeDockSize = useCallback(() => {}, [setDockSize]);
 
   const tutorialSteps = [
     {
@@ -72,7 +69,7 @@ const HowTo = ({ onClose }) => {
       description:
         "Personalize your OS by choosing your favorite accent color in System Settings.",
       icon: FaPalette,
-      highlight: ".accent-colors",
+      highlight: ".accent-colors-container",
       action: openSettings,
     },
     {
@@ -81,7 +78,7 @@ const HowTo = ({ onClose }) => {
         "You're ready to explore LakOS! Open System Settings anytime to customize your experience further.",
       icon: FaCog,
       highlight: null,
-      action: onClose,
+      action: null,
     },
   ];
 
@@ -153,6 +150,13 @@ const HowTo = ({ onClose }) => {
   const handleNext = () => {
     if (currentStep < tutorialSteps.length - 1) {
       setCurrentStep(currentStep + 1);
+    } else {
+      // This is the final step
+      showNotification(
+        "Quick tip: Click the search icon anytime to find my resume, projects, and contact info!",
+        FaCog
+      );
+      onClose();
     }
   };
 
@@ -200,11 +204,7 @@ const HowTo = ({ onClose }) => {
             {currentStep + 1} / {tutorialSteps.length}
           </div>
 
-          <button
-            className="nav-button"
-            onClick={handleNext}
-            disabled={currentStep === tutorialSteps.length - 1}
-          >
+          <button className="nav-button" onClick={handleNext}>
             <span>Next</span>
             <FaChevronRight />
           </button>

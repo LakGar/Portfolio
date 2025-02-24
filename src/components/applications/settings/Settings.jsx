@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   FaUser,
   FaPalette,
@@ -15,7 +15,12 @@ import {
   FaSearch,
 } from "react-icons/fa";
 import { ThemeContext } from "../../../contexts/ThemeContext";
+import { WindowManagerContext } from "../../../contexts/WindowManagerContext";
 import "./Settings.css";
+
+import notes from "../../../assets/notes-icon.png";
+import finder from "../../../assets/finder-app.png";
+import messages from "../../../assets/messages-icon.webp";
 
 const menuItems = [
   { icon: <FaUser />, label: "Apple ID", color: "#0078D7" },
@@ -47,6 +52,8 @@ const Settings = () => {
   } = useContext(ThemeContext);
   const [notificationSound, setNotificationSound] = useState(true);
   const [autoHideDock, setAutoHideDock] = useState(false);
+  const { searchTriggered, setSearchTriggered } =
+    useContext(WindowManagerContext);
 
   const accentColors = [
     "#0078D7",
@@ -58,6 +65,13 @@ const Settings = () => {
     "#32ADE6",
     "#AF52DE",
   ];
+
+  useEffect(() => {
+    if (searchTriggered) {
+      setSelectedMenu("Quick Access");
+      setSearchTriggered(false);
+    }
+  }, [searchTriggered, setSearchTriggered]);
 
   const renderContent = () => {
     switch (selectedMenu) {
@@ -101,17 +115,19 @@ const Settings = () => {
 
             <div className="settings-section">
               <h3>Accent Color</h3>
-              <div className="accent-colors">
-                {accentColors.map((color) => (
-                  <div
-                    key={color}
-                    className={`accent-color ${
-                      accentColor === color ? "selected" : ""
-                    }`}
-                    style={{ backgroundColor: color }}
-                    onClick={() => setAccentColor(color)}
-                  />
-                ))}
+              <div className="accent-colors-container">
+                <div className="accent-colors">
+                  {accentColors.map((color) => (
+                    <div
+                      key={color}
+                      className={`accent-color ${
+                        accentColor === color ? "selected" : ""
+                      }`}
+                      style={{ backgroundColor: color }}
+                      onClick={() => setAccentColor(color)}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -195,6 +211,48 @@ const Settings = () => {
                     onChange={() => setNotificationSound(!notificationSound)}
                   />
                   <span className="slider"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case "Quick Access":
+        return (
+          <div className="settings-content">
+            <h2>Quick Access Guide</h2>
+
+            <div className="settings-section">
+              <h3>Document Locations</h3>
+              <div className="quick-access-items">
+                <div className="quick-access-item">
+                  <div className="app-icon">
+                    <img src={notes} alt="Notes" />
+                  </div>
+                  <div className="item-details">
+                    <h4>Resume</h4>
+                    <p>Located in Notes app</p>
+                  </div>
+                </div>
+
+                <div className="quick-access-item">
+                  <div className="app-icon">
+                    <img src={finder} alt="Finder" />
+                  </div>
+                  <div className="item-details">
+                    <h4>Projects</h4>
+                    <p>Browse in Finder</p>
+                  </div>
+                </div>
+
+                <div className="quick-access-item">
+                  <div className="app-icon">
+                    <img src={messages} alt="Messages" />
+                  </div>
+                  <div className="item-details">
+                    <h4>Contact Information</h4>
+                    <p>Available in Messages</p>
+                  </div>
                 </div>
               </div>
             </div>

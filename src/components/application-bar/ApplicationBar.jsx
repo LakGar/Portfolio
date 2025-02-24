@@ -1,5 +1,6 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { WindowManagerContext } from "../../contexts/WindowManagerContext";
+import { ThemeContext } from "../../contexts/ThemeContext";
 import "./ApplicationBar.css";
 import finder from "../../assets/finder-app.png";
 import safari from "../../assets/safari-icon.png";
@@ -16,6 +17,18 @@ import trash from "../../assets/trash-icon.png";
 const ApplicationBar = () => {
   const [hoveredApp, setHoveredApp] = useState(null);
   const { openApplication } = useContext(WindowManagerContext);
+  const { dockSize } = useContext(ThemeContext);
+
+  // Calculate icon size based on dock size (80% of dock size)
+  const iconSize = Math.round(dockSize * 0.8);
+
+  // Set the CSS variable for icon size
+  useEffect(() => {
+    document.documentElement.style.setProperty(
+      "--dock-icon-size",
+      `${iconSize}px`
+    );
+  }, [iconSize]);
 
   const apps = [
     { id: "finder", name: "Finder", icon: finder },
@@ -31,30 +44,21 @@ const ApplicationBar = () => {
   ];
 
   return (
-    <div className="application-bar-container">
-      <div className="application-bar-content">
-        {apps.map((app) => (
-          <div
-            key={app.id}
-            className={`app-icon-wrapper ${
-              hoveredApp === app.id ? "hovered" : ""
-            }`}
-            onMouseEnter={() => setHoveredApp(app.id)}
-            onMouseLeave={() => setHoveredApp(null)}
-            onClick={() => openApplication(app.id)}
-          >
-            <img
-              className={`app-icon ${app.icon}`}
-              src={app.icon}
-              alt={app.name}
-            />
-            {hoveredApp === app.id && (
-              <div className="app-tooltip">{app.name}</div>
-            )}
-            <div className="app-dot"></div>
-          </div>
-        ))}
-      </div>
+    <div className="application-bar">
+      {apps.map((app) => (
+        <div
+          key={app.id}
+          className="app-icon-wrapper"
+          onClick={() => openApplication(app.id)}
+          onMouseEnter={() => setHoveredApp(app.id)}
+          onMouseLeave={() => setHoveredApp(null)}
+        >
+          <img src={app.icon} alt={app.name} />
+          {hoveredApp === app.id && (
+            <div className="app-tooltip">{app.name}</div>
+          )}
+        </div>
+      ))}
     </div>
   );
 };
